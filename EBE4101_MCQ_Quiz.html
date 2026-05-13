@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBE4101 — MCQ Assessment</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --card: #181c25;
+    --border: #252a36;
+    --accent: #c8a96e;
+    --accent2: #5b8dd9;
+    --correct: #3d8b5e;
+    --wrong: #b04040;
+    --text: #e8e4dc;
+    --muted: #6e7585;
+    --label: #9ba3b4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+
+  .header-left p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 3px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .score-box {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--label);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 18px;
+    white-space: nowrap;
+  }
+
+  .score-box span { color: var(--accent); font-weight: 500; }
+
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    width: 100%;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  main {
+    max-width: 820px;
+    margin: 48px auto 0;
+    padding: 0 24px;
+  }
+
+  .section-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(200,169,110,0.1);
+    border: 1px solid rgba(200,169,110,0.25);
+    border-radius: 4px;
+    padding: 3px 10px;
+    margin-bottom: 28px;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 30px;
+    margin-bottom: 20px;
+    transition: border-color 0.25s;
+  }
+
+  .question-card:hover { border-color: #333b4f; }
+
+  .q-header {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  .q-text {
+    font-size: 0.97rem;
+    line-height: 1.65;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 9px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.91rem;
+    line-height: 1.5;
+    color: var(--label);
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--accent2);
+    background: rgba(91,141,217,0.07);
+    color: var(--text);
+  }
+
+  .option-letter {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    min-width: 18px;
+    margin-top: 1px;
+  }
+
+  .option.selected { border-color: var(--accent2); background: rgba(91,141,217,0.12); color: var(--text); }
+  .option.selected .option-letter { color: var(--accent2); }
+
+  .option.correct { border-color: var(--correct); background: rgba(61,139,94,0.13); color: var(--text); }
+  .option.correct .option-letter { color: #5fcf93; }
+
+  .option.wrong { border-color: var(--wrong); background: rgba(176,64,64,0.13); color: var(--text); }
+  .option.wrong .option-letter { color: #e07070; }
+
+  .option.disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--accent);
+    background: rgba(200,169,110,0.06);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.86rem;
+    color: var(--label);
+    line-height: 1.6;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: var(--accent); }
+
+  .submit-btn {
+    display: block;
+    margin: 10px 0 0 auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .submit-btn:hover { background: var(--accent); color: var(--bg); }
+  .submit-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .result-banner {
+    text-align: center;
+    margin: 56px 0 20px;
+    padding: 44px 40px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .result-banner h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .result-banner p { color: var(--muted); font-size: 0.92rem; }
+  .result-banner .big-score { font-size: 4rem; font-family: 'DM Serif Display', serif; color: var(--text); }
+  .result-banner .grade { font-size: 0.85rem; font-family: 'DM Mono', monospace; letter-spacing: 0.08em; color: var(--accent2); margin-top: 6px; }
+
+  .finish-btn {
+    margin-top: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: var(--bg);
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    transition: opacity 0.2s;
+  }
+  .finish-btn:hover { opacity: 0.85; }
+
+  @media (max-width: 600px) {
+    header { padding: 20px; flex-direction: column; align-items: flex-start; }
+    main { padding: 0 14px; }
+    .question-card { padding: 20px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
+
+<header>
+  <div class="header-left">
+    <h1>EBE4101 — Behavioural Sciences</h1>
+    <p>L5 Learning · L6 Personality · L7 Motivation & Health Behavior</p>
+  </div>
+  <div class="score-box">Score: <span id="liveScore">0</span> / <span id="liveTotal">0</span> answered</div>
+</header>
+
+<main id="quizContainer"></main>
+
+<script>
+const questions = [
+  // ── CLASSIFICATION OF MOTIVES ────────────────────────────────────
+  {
+    section: "Classification of Motives",
+    q: "According to the lecture's definition, which component of a motive is primarily responsible for directing behavior rather than merely energizing it?",
+    opts: [
+      "The arousal dimension that raises general activation levels",
+      "The goal-directedness dimension that channels behavior toward a specific target",
+      "The persistence dimension that sustains effort over time",
+      "The hedonic dimension that regulates pleasure-seeking"
+    ],
+    ans: 1,
+    exp: "Motives are defined as internal processes that energize, <strong>direct</strong>, and sustain behavior toward a specific goal. Direction—not arousal—specifies the target of behavior."
+  },
+  {
+    section: "Classification of Motives",
+    q: "In Schwartz's Theory of Basic Values, which pair of values sits at the opposing motivational pole to Universalism and Benevolence?",
+    opts: [
+      "Stimulation and Self-Direction",
+      "Hedonism and Achievement",
+      "Power and Achievement",
+      "Security and Conformity"
+    ],
+    ans: 2,
+    exp: "Schwartz's circular model places <strong>Power and Achievement</strong> (self-enhancement) at the motivational opposite of Universalism and Benevolence (self-transcendence)."
+  },
+  {
+    section: "Classification of Motives",
+    q: "A patient refuses a cancer screening despite knowing the statistics because 'fate will decide anyway.' Which motivational classification best captures this belief's role?",
+    opts: [
+      "A secondary motive shaped by social learning",
+      "A core belief acting as a generalized motive filter",
+      "A hedonistic primary motive overriding rational appraisal",
+      "A conformity value suppressing self-direction"
+    ],
+    ans: 1,
+    exp: "Core beliefs are defined as <strong>fundamental, inflexible, absolute, and generalized</strong> beliefs about the world or future. Here the belief acts as a motivational filter blocking health action."
+  },
+  {
+    section: "Classification of Motives",
+    q: "Which of the following correctly distinguishes values from motives as defined in the lecture?",
+    opts: [
+      "Values energize specific behaviors; motives provide general guiding principles",
+      "Motives are internal energizing processes toward specific goals; values are broad desirable goals serving as life-guiding principles",
+      "Both values and motives are specific goal-directed states; they differ only in intensity",
+      "Values are unconscious; motives are always consciously experienced"
+    ],
+    ans: 1,
+    exp: "The lecture explicitly distinguishes: <strong>Motives</strong> = internal processes energizing, directing, sustaining behavior toward a specific goal. <strong>Values</strong> = broad desirable goals that motivate actions and serve as guiding principles."
+  },
+  {
+    section: "Classification of Motives",
+    q: "A person donates anonymously to charity and joins volunteer groups, driven by a desire to be useful to society without expectation of reward. Which Schwartz value is the PRIMARY driver?",
+    opts: [
+      "Conformity/Tradition",
+      "Benevolence",
+      "Universalism",
+      "Security"
+    ],
+    ans: 2,
+    exp: "<strong>Universalism</strong> involves understanding, appreciation, and protection of all people and nature. <strong>Benevolence</strong> focuses more narrowly on preserving and enhancing the welfare of people in close personal contact. Anonymous donation to a broad societal cause fits Universalism better."
+  },
+
+  // ── HEALTH BELIEF MODEL ─────────────────────────────────────────
+  {
+    section: "Health Belief Model & Applications",
+    q: "The Health Belief Model was originally developed to explain a 1950s public health failure. Which HBM construct was specifically absent, causing non-uptake of free TB X-ray screenings despite zero financial barriers?",
+    opts: [
+      "Perceived severity",
+      "Cue to action",
+      "Self-efficacy",
+      "Perceived susceptibility"
+    ],
+    ans: 3,
+    exp: "The TB screening failure was due to absent <strong>Perceived Susceptibility</strong>—people did not believe they could catch TB, so even free and accessible services were not used."
+  },
+  {
+    section: "Health Belief Model & Applications",
+    q: "A patient says: 'I know COVID can kill people, but I can't navigate the online registration, and I'm not able to stand in a crowded clinic all day.' Which TWO HBM constructs are simultaneously compromised?",
+    opts: [
+      "Perceived severity and perceived benefits",
+      "Perceived barriers and self-efficacy",
+      "Cue to action and perceived susceptibility",
+      "Perceived benefits and perceived severity"
+    ],
+    ans: 1,
+    exp: "The patient acknowledges severity (construct intact). 'Can't navigate registration / can't stand in clinic' reflects HIGH <strong>Perceived Barriers</strong> and LOW <strong>Self-efficacy</strong> (belief in one's capability to perform the behavior)."
+  },
+  {
+    section: "Health Belief Model & Applications",
+    q: "A pharmaceutical company runs TV ads showing recovered COVID patients praising the vaccine. Within HBM, this intervention primarily targets which construct?",
+    opts: [
+      "Perceived susceptibility by normalizing infection risk",
+      "Cue to action by creating environmental triggers for vaccine uptake",
+      "Perceived benefits by demonstrating favorable outcomes",
+      "Self-efficacy by modeling the vaccination behavior"
+    ],
+    ans: 1,
+    exp: "TV ads featuring recovered patients can function as <strong>Cue to Action</strong>—external environmental stimuli that prompt readiness to act. While they may incidentally address benefits, the primary HBM function of mass-media campaigns is cue to action."
+  },
+  {
+    section: "Health Belief Model & Applications",
+    q: "A biomedical engineer is designing a diabetes app. Early versions failed because users had to log every meal manually and abandoned it within weeks. Which HBM/Social Cognitive Theory construct does this failure illustrate?",
+    opts: [
+      "Reduced perceived severity of diabetes",
+      "Negative cue-to-action saturation",
+      "Decreased self-efficacy from high task friction",
+      "Perceived barrier of financial cost"
+    ],
+    ans: 2,
+    exp: "The lecture explicitly states that 'high-friction' data entry lowered user <strong>self-efficacy</strong>—their belief that they were capable of maintaining the habit—causing abandonment."
+  },
+
+  // ── THEORY OF PLANNED BEHAVIOR ──────────────────────────────────
+  {
+    section: "Theory of Planned Behavior",
+    q: "Google Glass failed partly because wearing it attracted negative social labeling. Within the Theory of Planned Behavior, this failure most precisely illustrates the effect of:",
+    opts: [
+      "Low perceived behavioral control suppressing intention formation",
+      "Negative subjective norms overriding positive attitudes and behavioral intention",
+      "Negative attitude formation due to poor product design",
+      "Absent cue to action in the social environment"
+    ],
+    ans: 1,
+    exp: "The lecture uses Google Glass as an example of <strong>Subjective Norms</strong> failure: social perception ('Glassholes') created a negative norm that outweighed benefits and suppressed adoption, even when attitudes and control were adequate."
+  },
+  {
+    section: "Theory of Planned Behavior",
+    q: "A nurse intends to follow hand-hygiene protocols, has a positive attitude, and faces no structural barriers—yet compliance remains low when supervisors are absent. Which TPB element is the most likely explanation?",
+    opts: [
+      "Negative attitude toward the specific behavior",
+      "Weak subjective norms when social monitoring is removed",
+      "Low perceived behavioral control",
+      "Insufficient cue to action in the environment"
+    ],
+    ans: 1,
+    exp: "TPB predicts behavior via attitude + <strong>subjective norms</strong> + perceived behavioral control. Compliance dropping without observers indicates the subjective norm (peer/supervisor approval) was the dominant driver, not internal attitude."
+  },
+
+  // ── TRANSTHEORETICAL MODEL ──────────────────────────────────────
+  {
+    section: "Transtheoretical Model",
+    q: "A smoker says: 'My father smoked until he was 90, and none of my smoking friends have cancer.' In the Transtheoretical Model, he is MOST accurately placed in:",
+    opts: [
+      "Contemplation—he is aware of the problem but ambivalent",
+      "Precontemplation—he is not considering change and rationalizes against it",
+      "Preparation—he is gathering information before deciding",
+      "Maintenance—he has relapsed into denial after a quit attempt"
+    ],
+    ans: 1,
+    exp: "The lecture uses this exact statement to illustrate <strong>Precontemplation</strong>: the individual is not considering change and actively constructs reasons why the behavior is not problematic."
+  },
+  {
+    section: "Transtheoretical Model",
+    q: "A patient in the Preparation stage of smoking cessation is best supported by which intervention type?",
+    opts: [
+      "Delivering a brief warning about lung cancer statistics",
+      "Discussing relapse prevention strategies for after they quit",
+      "Helping them set a quit date, identify cessation resources, and talk to supportive contacts",
+      "Providing nicotine replacement therapy immediately"
+    ],
+    ans: 2,
+    exp: "Preparation in the lecture is characterized by: setting a date to visit a specialist, talking to relatives, researching services. The matching intervention is facilitating <strong>planning actions</strong> rather than discussing relapse (Maintenance stage) or statistics (Precontemplation)."
+  },
+  {
+    section: "Transtheoretical Model",
+    q: "A patient who successfully quit smoking for 8 months has one cigarette during Ramadan. The Transtheoretical Model categorizes this event as:",
+    opts: [
+      "Termination—the process has failed and must restart from Precontemplation",
+      "Relapse—a recognized non-linear stage that does not invalidate prior progress",
+      "Contemplation—the patient has re-entered ambivalence",
+      "Preparation—the slip indicates insufficient readiness"
+    ],
+    ans: 1,
+    exp: "The lecture explicitly labels this scenario as <strong>Relapse</strong>—a normal, non-linear stage within the Transtheoretical Model. The model accommodates relapse without resetting all prior progress."
+  },
+
+  // ── SOCIAL COGNITIVE THEORY ─────────────────────────────────────
+  {
+    section: "Social Cognitive Theory & Applications",
+    q: "In Social Cognitive Theory, 'reciprocal determinism' implies that a patient's health behavior is BEST understood as:",
+    opts: [
+      "A fixed output of their personality traits",
+      "A unidirectional product of environmental reinforcement",
+      "A bidirectional interaction among personal cognitions, behavior, and environment",
+      "An expression of unconscious drives mediated by ego defense"
+    ],
+    ans: 2,
+    exp: "Bandura's Reciprocal Determinism holds that <strong>person (cognitions/beliefs), behavior, and environment mutually influence each other</strong>—none is the sole determinant."
+  },
+  {
+    section: "Social Cognitive Theory & Applications",
+    q: "A wearable device promotes adherence by showing a user real-time comparison of their step count against their peer group. The mechanism exploited is MOST precisely:",
+    opts: [
+      "Increasing perceived susceptibility per the Health Belief Model",
+      "Self-efficacy enhancement through mastery experiences",
+      "Social comparison as a vicarious reinforcement mechanism within Social Cognitive Theory",
+      "Operant conditioning via a variable ratio schedule"
+    ],
+    ans: 2,
+    exp: "Social comparison leverages <strong>vicarious reinforcement</strong> in Social Cognitive Theory—observing others' performance influences self-regulatory motivation and self-efficacy."
+  },
+
+  // ── LEARNING: CLASSICAL CONDITIONING ────────────────────────────
+  {
+    section: "Classical Conditioning & Biomedical Applications",
+    q: "In a closed-loop vagus nerve stimulation (VNS) rehabilitation system, the patient's voluntary hand movement is paired with timed VNS. Using classical conditioning terminology, the VNS stimulus functions as:",
+    opts: [
+      "Conditioned stimulus (CS), because it precedes the behavioral response",
+      "Unconditioned stimulus (UCS)-like neuromodulator, because it inherently enhances cortical plasticity",
+      "Conditioned response (CR), because plasticity occurs only after training",
+      "Neutral stimulus (NS), because it has no intrinsic effect before pairing"
+    ],
+    ans: 1,
+    exp: "The lecture maps VNS as a <strong>UCS-like neuromodulator</strong>: it has an intrinsic neurobiological effect (cortical reorganization) independent of learned association—analogous to an unconditioned stimulus."
+  },
+  {
+    section: "Classical Conditioning & Biomedical Applications",
+    q: "Hebbian plasticity ('neurons that fire together wire together') is the neural mechanism underlying which type of learning in the lecture's framework?",
+    opts: [
+      "Operant conditioning via feedback-driven adaptation",
+      "Sensitization after repeated high-intensity stimuli",
+      "Associative learning / classical conditioning at the synaptic level",
+      "Insight learning through cognitive reorganization"
+    ],
+    ans: 2,
+    exp: "The lecture explicitly places Hebbian plasticity under <strong>Associative Learning in Neural Circuits</strong>—the synaptic correlate of classical conditioning where co-activation strengthens connections."
+  },
+  {
+    section: "Classical Conditioning & Biomedical Applications",
+    q: "Aversion therapy for addiction employs which classical conditioning principle?",
+    opts: [
+      "Pairing the addictive stimulus (CS) with an aversive UCS so the substance elicits a conditioned aversive response",
+      "Withholding reinforcement after every instance of drug-seeking behavior",
+      "Substituting the addictive behavior with an incompatible prosocial behavior",
+      "Flooding the patient with drug-related cues until habituation extinguishes craving"
+    ],
+    ans: 0,
+    exp: "Aversion therapy pairs the formerly rewarding CS (e.g., alcohol) with an aversive UCS (e.g., nausea-inducing drug), establishing a <strong>conditioned aversive response</strong> to the substance."
+  },
+  {
+    section: "Classical Conditioning & Biomedical Applications",
+    q: "A patient develops anxiety every time they enter the hospital because they previously experienced painful procedures there. This is an example of:",
+    opts: [
+      "Operant conditioning—the pain functioned as positive punishment",
+      "Higher-order classical conditioning—the hospital is a CS2 associated with pain as CS1",
+      "Classical conditioning—the hospital (NS→CS) is associated with pain (UCS) producing anxiety (CR)",
+      "Sensitization—repeated exposure increased the anxiety response"
+    ],
+    ans: 2,
+    exp: "The hospital began as a neutral stimulus (NS), was paired with painful procedures (UCS→UCR pain), and now elicits anxiety (CR) independently—a straightforward <strong>classical conditioning</strong> paradigm."
+  },
+
+  // ── OPERANT CONDITIONING ────────────────────────────────────────
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "A rehabilitation robot delivers haptic feedback only after every 5th correct EMG contraction. This reinforcement schedule is:",
+    opts: [
+      "Fixed interval—reinforcement depends on time elapsed",
+      "Variable ratio—reinforcement depends on an unpredictable number of responses",
+      "Fixed ratio—reinforcement follows every fixed number of correct responses",
+      "Variable interval—reinforcement appears after unpredictable time periods"
+    ],
+    ans: 2,
+    exp: "<strong>Fixed ratio</strong> reinforcement is delivered after a fixed number of responses (every 5th contraction). This schedule encourages high volume of behavior and aids rapid acquisition."
+  },
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "A ADHD neurofeedback system rewards the patient only when desired EEG alpha/beta ratios are sustained. Over months, the system gradually raises the threshold for reward. This strategy maps to which reinforcement principle?",
+    opts: [
+      "Shaping via differential reinforcement of higher rates (DRH)",
+      "Extinction burst followed by secondary reinforcement",
+      "Fixed interval schedule transitioning to variable interval",
+      "Negative punishment by removing screen time below threshold"
+    ],
+    ans: 0,
+    exp: "Raising the threshold for reward progressively is <strong>shaping</strong>—specifically using <strong>Differential Reinforcement of Higher Rates (DRH)</strong> to reinforce increasingly better approximations of the desired brainwave pattern."
+  },
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "Pop quizzes in a course maintain student study behavior better than announced exams. This is because pop quizzes implement:",
+    opts: [
+      "Fixed ratio reinforcement—encouraging volume of studying",
+      "Variable interval reinforcement—maintaining adherence with unpredictable timing",
+      "Fixed interval reinforcement—encouraging periodic bursts of study",
+      "Variable ratio reinforcement—creating the highest resistance to extinction"
+    ],
+    ans: 1,
+    exp: "The lecture lists pop quizzes under <strong>Variable Interval</strong> reinforcement: reward arrives after unpredictable time intervals, which 'promotes persistence' and maintains adherence."
+  },
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "A physical therapist ignores (does not react to) a patient's complaining behavior while enthusiastically praising effort during exercises. The behavior management strategy for complaints is:",
+    opts: [
+      "Differential Reinforcement of Other Behavior (DRO)—reinforcing the absence of complaining",
+      "Positive punishment—adding an aversive event contingent on complaining",
+      "Extinction—withholding all reinforcement for complaining to reduce its rate",
+      "Differential Reinforcement of Incompatible Behavior (DRI)"
+    ],
+    ans: 2,
+    exp: "Ignoring complaining consistently removes the social reinforcer (attention), constituting <strong>extinction</strong>. DRO would require actively reinforcing any behavior other than complaining; here the therapist simply withholds reinforcement."
+  },
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "A child hits a sibling. The parent punishes only half the time due to fatigue. According to the lecture, what is the MOST likely unintended behavioral outcome?",
+    opts: [
+      "Rapid extinction of hitting because punishment is eventually experienced",
+      "The child learns to hide the hitting behavior rather than stop it",
+      "Hitting escalates into a fixed ratio schedule of aggression",
+      "The child develops conditioned fear of all interactions with the sibling"
+    ],
+    ans: 1,
+    exp: "The lecture explicitly states: 'Inconsistent punishment usually leads to the subject <strong>hiding while doing the behaviour instead of abandoning it</strong>'—a critical clinical/engineering design concern."
+  },
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "In an artificial pancreas system, insulin delivery is increased when blood glucose rises and decreased when it normalizes. In operant conditioning terms, normal glucose suppression of insulin delivery is analogous to:",
+    opts: [
+      "Positive reinforcement of glucose-lowering physiology",
+      "Negative reinforcement—removal of the aversive high-glucose state reinforces the system's response",
+      "Punishment of hyperglycemia via increased insulin as positive punishment",
+      "Extinction of hyperglycemia by withholding glucose intake"
+    ],
+    ans: 1,
+    exp: "The closed-loop system <strong>negatively reinforces</strong> correct insulin delivery: the aversive state (high glucose) is removed when the system responds correctly, strengthening that response loop—a direct analogy to operant negative reinforcement."
+  },
+  {
+    section: "Operant Conditioning & Reinforcement",
+    q: "Which differential reinforcement strategy would be MOST appropriate for reducing a patient's excessive hand-washing in OCD treatment, while explicitly teaching them to engage in another activity when the urge arises?",
+    opts: [
+      "DRO—reinforce any period without hand-washing",
+      "DRL—reinforce only when hand-washing rate decreases below a threshold",
+      "DRA—reinforce an alternative appropriate behavior when the urge is present",
+      "DRI—reinforce a behavior physically incompatible with hand-washing"
+    ],
+    ans: 2,
+    exp: "<strong>DRA (Differential Reinforcement of Alternative Behavior)</strong> reinforces a more appropriate alternative (e.g., mindfulness exercise) when the OCD urge arises, effectively teaching a replacement behavior—often combined with ERP in clinical practice."
+  },
+
+  // ── PERSONALITY: TRAIT THEORY ────────────────────────────────────
+  {
+    section: "Personality — Trait Theory",
+    q: "Eysenck proposed that extraverted individuals have chronically low cortical arousal. This hypothesis predicts that extraverts would show which pattern in classical conditioning experiments?",
+    opts: [
+      "Faster acquisition of conditioned fear due to heightened sensitivity to stimuli",
+      "Slower acquisition of conditioned responses and reduced sensitivity to reward/punishment",
+      "Identical conditioning rates to introverts, differing only in response magnitude",
+      "Preferential conditioning to social stimuli over nonsocial stimuli"
+    ],
+    ans: 1,
+    exp: "Eysenck argued that low cortical arousal means extraverts are <strong>less sensitive to reward and punishment</strong> and therefore do not readily develop conditioned responses including conditioned fear—explaining impulsive, rule-breaking tendencies."
+  },
+  {
+    section: "Personality — Trait Theory",
+    q: "Cattell's 16PF differs from Allport's approach primarily because Cattell:",
+    opts: [
+      "Used clinical case studies rather than normative samples",
+      "Replaced logical/lexical enumeration with statistical factor analysis of trait correlations",
+      "Limited personality to 3 dimensions by studying pathological populations",
+      "Derived traits from psychodynamic drive theory rather than observable behavior"
+    ],
+    ans: 1,
+    exp: "Allport used a lexical/logical method (18,000 dictionary terms). Cattell replaced this with <strong>statistical factor analysis</strong>—correlating trait ratings to identify latent factors, arriving at 16 personality factors."
+  },
+  {
+    section: "Personality — Trait Theory",
+    q: "A patient with anxiety disorder is MOST likely to score in which Eysenck quadrant, and what Hippocratic temperament does this correspond to?",
+    opts: [
+      "High extraversion + high neuroticism → Choleric",
+      "High introversion + high neuroticism → Melancholic",
+      "High introversion + low neuroticism → Phlegmatic",
+      "High extraversion + low neuroticism → Sanguine"
+    ],
+    ans: 1,
+    exp: "The lecture states: 'People with anxiety disorders tend to fall in the <strong>melancholic quadrant</strong>' — corresponding to high introversion + high neuroticism in Eysenck's model."
+  },
+  {
+    section: "Personality — Trait Theory",
+    q: "The Big Five factor Conscientiousness is MOST directly relevant to biomedical device adherence because high scorers are characterized by:",
+    opts: [
+      "Openness to novel feedback modalities and sensor data",
+      "Reliability, planning, organization, and dependability—supporting structured protocol adherence",
+      "Low neuroticism, reducing anxiety-driven avoidance of device use",
+      "Extraverted engagement with social features that encourage continued use"
+    ],
+    ans: 1,
+    exp: "The lecture lists Conscientiousness traits as: 'efficient, organized, planning, reliable, thorough, dependable, ethical, productive'—all directly predict adherence to structured rehabilitation or monitoring protocols."
+  },
+  {
+    section: "Personality — Trait Theory",
+    q: "A wearable stress monitor is being redesigned. For users high in Neuroticism, the lecture recommends:",
+    opts: [
+      "Providing raw data analytics and structured goal tracking",
+      "Adding social competition features and community leaderboards",
+      "Offering frequent reassurance and a simplified user interface",
+      "Maximizing sensor complexity to maintain their high vigilance"
+    ],
+    ans: 2,
+    exp: "The lecture's case-based application explicitly states: 'High neuroticism: <strong>frequent reassurance, simple UI</strong>'—reflecting the need to reduce overwhelm and support emotional regulation."
+  },
+
+  // ── PERSONALITY: PSYCHODYNAMIC ──────────────────────────────────
+  {
+    section: "Personality — Psychodynamic Approach",
+    q: "A surgeon insists her 18-hour days benefit patients, but colleagues observe her avoiding family conflict at home. The defense mechanism operating is MOST precisely:",
+    opts: [
+      "Sublimation—converting aggression into socially valued overwork",
+      "Rationalization—constructing a plausible but inauthentic justification for the behavior",
+      "Reaction formation—acting opposite to an unconscious wish to disengage",
+      "Displacement—redirecting family-related anxiety onto patient care"
+    ],
+    ans: 1,
+    exp: "<strong>Rationalization</strong>: the lecture defines it as 'attempts to make actions or mistakes seem more reasonable; the excuse has a rational ring but is not the real reason.' Claiming patient benefit as the motive for avoidance behavior fits precisely."
+  },
+  {
+    section: "Personality — Psychodynamic Approach",
+    q: "A medical student who unconsciously feels incompetent becomes the most vocal critic of peers' clinical skills. The defense mechanism is:",
+    opts: [
+      "Projection—attributing one's own unacceptable thoughts to another",
+      "Reaction formation—acting opposite to an unacceptable impulse",
+      "Compensation—overloading others to mask personal insecurity",
+      "Displacement—redirecting self-directed inadequacy onto others"
+    ],
+    ans: 0,
+    exp: "<strong>Projection</strong>: 'Unconsciously attributing one's own unacceptable thoughts or impulses to another person.' Feeling incompetent oneself is projected outward as perceiving others' incompetence."
+  },
+  {
+    section: "Personality — Psychodynamic Approach",
+    q: "Freud's structural theory holds that the Superego develops by age 5. Which conflict does this create with the Id that defines the core psychodynamic tension?",
+    opts: [
+      "Reality versus fantasy in processing environmental demands",
+      "Pleasure principle (Id) versus moral values (Superego), mediated by the reality-oriented Ego",
+      "Conscious versus unconscious processing of libidinous impulses",
+      "Extraversion versus introversion in social adaptation"
+    ],
+    ans: 1,
+    exp: "The Id operates on the <strong>pleasure principle</strong>; the Superego holds moral values; the Ego, operating on the reality principle, mediates between them. This tripartite tension is the core of Freud's structural theory."
+  },
+  {
+    section: "Personality — Psychodynamic Approach",
+    q: "Karen Horney's contribution to Neo-Freudian theory is BEST characterized by:",
+    opts: [
+      "Introducing the concept of collective unconscious and archetypes",
+      "Proposing 10 neurotic needs and developing feminist psychology including the concept of womb envy",
+      "Emphasizing interpersonal psychology over intrapsychic conflict",
+      "Introducing the separation-individuation model of infant development"
+    ],
+    ans: 1,
+    exp: "The lecture table attributes to Horney: '<strong>10 neurotic needs, feminist psychology (womb envy)</strong>'—a direct counter to Freud's penis envy concept."
+  },
+
+  // ── PERSONALITY: COGNITIVE-BEHAVIORAL & PHENOMENOLOGICAL ────────
+  {
+    section: "Personality — Cognitive-Behavioral & Phenomenological",
+    q: "Rotter's 'externals' would be MOST likely to exhibit which health behavior pattern?",
+    opts: [
+      "High adherence, because they seek control through medical compliance",
+      "Proactive lifestyle modification, because they believe effort determines outcome",
+      "Poor adherence and fatalistic health decisions, because outcomes are attributed to external forces beyond their control",
+      "High health anxiety, because they overestimate personal vulnerability to disease"
+    ],
+    ans: 2,
+    exp: "'Externals' in Rotter's theory attribute outcomes to external forces (luck, fate, powerful others). This predicts <strong>reduced personal health agency</strong>—fatalistic attitudes, poor self-management, and reduced treatment adherence."
+  },
+  {
+    section: "Personality — Cognitive-Behavioral & Phenomenological",
+    q: "Mischel's 'person variables' framework is MOST useful to a biomedical engineer designing a rehabilitation app because it emphasizes:",
+    opts: [
+      "The biological trait dimensions that determine cortical arousal thresholds",
+      "Individualized cognitive schemata (competencies, perceptions, expectancies, values, self-regulation plans) that determine behavior in specific situations",
+      "The unconscious conflicts that undermine treatment motivation",
+      "The universal developmental stages that govern patient readiness for technology"
+    ],
+    ans: 1,
+    exp: "Mischel's <strong>person variables</strong>—competencies, perceptions, expectancies, subjective values, self-regulation plans—are individual cognitive features that predict behavior in context. They map directly to UX personalization parameters."
+  },
+  {
+    section: "Personality — Cognitive-Behavioral & Phenomenological",
+    q: "Rogers' 'conditions of worth' most directly impair health outcomes by:",
+    opts: [
+      "Lowering perceived susceptibility to illness by distorting self-assessment",
+      "Creating a discrepancy between the real self and conditions set by others, blocking authentic self-actualization and leading to psychological distress",
+      "Establishing negative subjective norms that suppress health intentions",
+      "Generating conditioned anxiety responses to self-related cues"
+    ],
+    ans: 1,
+    exp: "Conditions of worth emerge when <strong>people are evaluated instead of their actions</strong>, creating a gap between authentic self and externally imposed worth—a source of psychological distress that interferes with the innate self-actualizing tendency."
+  },
+  {
+    section: "Personality — Cognitive-Behavioral & Phenomenological",
+    q: "Maslow's 'deficiency orientation' most accurately predicts which health-damaging cognitive pattern?",
+    opts: [
+      "Overemphasis on growth and peak experience at the expense of physical safety",
+      "Preoccupation with perceived material needs leading to substitution of status-seeking for genuine well-being",
+      "Excessive self-disclosure that undermines therapeutic alliances",
+      "Rigid hierarchical thinking that prevents flexible coping"
+    ],
+    ans: 1,
+    exp: "Deficiency orientation involves being 'controlled by preoccupation with perceived need for material things.' The lecture's example: seeking the <strong>highest-paying job for status objects</strong> instead of meaningful work—missing genuine esteem and well-being."
+  },
+
+  // ── BIOMEDICAL ENGINEERING APPLICATIONS ─────────────────────────
+  {
+    section: "Biomedical Engineering Applications",
+    q: "A prosthetic hand control system uses EMG signals from a residual limb. The user makes trial motor commands; successful movements produce visual and proprioceptive feedback. This system implements which conditioning framework?",
+    opts: [
+      "Classical conditioning—pairing EMG signal with proprioceptive UCS",
+      "Operant conditioning—trial-and-error behavior is reinforced by successful movement feedback",
+      "Insight learning—the user forms a cognitive map of motor commands",
+      "Sensitization—repeated movement attempts increase motor cortex excitability"
+    ],
+    ans: 1,
+    exp: "The lecture explicitly maps prosthetic training to <strong>operant conditioning</strong>: 'Trial-and-error motor commands → successful movement → reinforcement → gradual optimization of control.'"
+  },
+  {
+    section: "Biomedical Engineering Applications",
+    q: "Deep Brain Stimulation (DBS) that suppresses pathological oscillations and rewards normal physiological states is described in the lecture as analogous to:",
+    opts: [
+      "Classical conditioning—associating neural activity with artificial cues",
+      "An engineered operant conditioning system that rewards desired physiological states and suppresses pathological patterns",
+      "Systematic desensitization by gradually reducing stimulus intensity",
+      "A variable ratio reinforcement schedule applied to neural circuits"
+    ],
+    ans: 1,
+    exp: "The lecture categorizes DBS under 'Closed-Loop Systems = Engineered Conditioning,' stating the system <strong>'rewards desired physiological state and suppresses pathological patterns'</strong>—the defining features of operant conditioning."
+  },
+  {
+    section: "Biomedical Engineering Applications",
+    q: "From the personality-informed biomedical engineering framework, which personality dimension provides neurobiological correlates that can be measured and used as engineering parameters for adaptive system design?",
+    opts: [
+      "Big Five Openness—predicts willingness to engage with novel sensor interfaces",
+      "Eysenck's dimensions—linked to cortical arousal and limbic variability, providing measurable physiological targets",
+      "Myers-Briggs Sensing/Intuition—predicts preferred data visualization format",
+      "Somatotype—provides anthropometric parameters for device ergonomics"
+    ],
+    ans: 1,
+    exp: "The lecture highlights <strong>Eysenck's model → neurobiological correlates</strong> as a key reason it is useful in biomedical engineering: his dimensions map to cortical arousal (extraversion) and limbic reactivity (neuroticism), providing measurable physiological parameters."
+  },
+  {
+    section: "Biomedical Engineering Applications",
+    q: "A neurofeedback system for ADHD rewards the user when a target EEG feature appears, using a visual game display. The primary engineering challenge that determines whether the conditioning is clinically effective is:",
+    opts: [
+      "The aesthetic design of the game interface maintaining user interest",
+      "Signal-to-noise ratio and real-time processing latency, which determine the temporal precision of the reinforcement contingency",
+      "The variability of the reward schedule, which must be fixed ratio for ADHD",
+      "The number of EEG electrodes, which must exceed 64 for adequate spatial resolution"
+    ],
+    ans: 1,
+    exp: "The lecture identifies the key engineering challenge as '<strong>signal-to-noise ratio, real-time processing latency, feature extraction</strong>'—because operant conditioning requires reinforcement to be delivered immediately and contingently upon the correct response."
+  },
+  {
+    section: "Biomedical Engineering Applications",
+    q: "The lecture's 'take-home message' for biomedical engineers concludes that modern medical devices differ fundamentally from traditional tools because they:",
+    opts: [
+      "Eliminate the need for patient behavioral compliance through full automation",
+      "Apply classical and operant conditioning principles to actively teach the nervous system how to behave",
+      "Replace psychotherapy by implementing pharmacological reinforcement schedules",
+      "Provide static stimulation patterns calibrated from population-level norms"
+    ],
+    ans: 1,
+    exp: "The lecture's conclusion: 'Many modern medical devices are not just tools—they are <strong>systems that teach the nervous system how to behave</strong>'—implementing classical and operant conditioning via sensors, algorithms, and actuators."
+  }
+];
+
+let answered = 0;
+let correct = 0;
+const totalQ = questions.length;
+
+function updateProgress() {
+  document.getElementById('progressBar').style.width = (answered / totalQ * 100) + '%';
+  document.getElementById('liveScore').textContent = correct;
+  document.getElementById('liveTotal').textContent = answered;
+}
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  let currentSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== currentSection) {
+      currentSection = q.section;
+      const tag = document.createElement('div');
+      tag.className = 'section-tag';
+      tag.style.marginTop = i === 0 ? '0' : '48px';
+      tag.textContent = q.section;
+      container.appendChild(tag);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `card-${i}`;
+
+    const qHeader = document.createElement('div');
+    qHeader.className = 'q-header';
+
+    const qNum = document.createElement('div');
+    qNum.className = 'q-num';
+    qNum.textContent = `Q${String(i+1).padStart(2,'0')}`;
+
+    const qText = document.createElement('div');
+    qText.className = 'q-text';
+    qText.textContent = q.q;
+
+    qHeader.appendChild(qNum);
+    qHeader.appendChild(qText);
+    card.appendChild(qHeader);
+
+    const opts = document.createElement('div');
+    opts.className = 'options';
+    const letters = ['A','B','C','D'];
+
+    q.opts.forEach((opt, oi) => {
+      const btn = document.createElement('div');
+      btn.className = 'option';
+      btn.dataset.qi = i;
+      btn.dataset.oi = oi;
+      btn.innerHTML = `<span class="option-letter">${letters[oi]}</span><span>${opt}</span>`;
+      btn.addEventListener('click', () => selectOption(i, oi));
+      opts.appendChild(btn);
+    });
+
+    card.appendChild(opts);
+
+    const exp = document.createElement('div');
+    exp.className = 'explanation';
+    exp.id = `exp-${i}`;
+    exp.innerHTML = `<strong>Explanation:</strong> ${q.exp}`;
+    card.appendChild(exp);
+
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'submit-btn';
+    submitBtn.textContent = 'CONFIRM →';
+    submitBtn.id = `submit-${i}`;
+    submitBtn.disabled = true;
+    submitBtn.addEventListener('click', () => confirmAnswer(i));
+    card.appendChild(submitBtn);
+
+    container.appendChild(card);
+  });
+
+  updateProgress();
+}
+
+let selections = {};
+
+function selectOption(qi, oi) {
+  const card = document.getElementById(`card-${qi}`);
+  if (card.dataset.answered) return;
+
+  selections[qi] = oi;
+  const opts = card.querySelectorAll('.option');
+  opts.forEach(o => o.classList.remove('selected'));
+  opts[oi].classList.add('selected');
+
+  document.getElementById(`submit-${qi}`).disabled = false;
+}
+
+function confirmAnswer(qi) {
+  const card = document.getElementById(`card-${qi}`);
+  if (card.dataset.answered) return;
+  card.dataset.answered = '1';
+
+  const selected = selections[qi];
+  const correct_ans = questions[qi].ans;
+  const opts = card.querySelectorAll('.option');
+
+  opts.forEach((o, oi) => {
+    o.classList.add('disabled');
+    o.classList.remove('selected');
+    if (oi === correct_ans) o.classList.add('correct');
+    else if (oi === selected && selected !== correct_ans) o.classList.add('wrong');
+  });
+
+  document.getElementById(`exp-${qi}`).classList.add('show');
+  document.getElementById(`submit-${qi}`).disabled = true;
+
+  answered++;
+  if (selected === correct_ans) correct++;
+  updateProgress();
+
+  if (answered === totalQ) showResult();
+}
+
+function showResult() {
+  const pct = Math.round(correct / totalQ * 100);
+  let grade = pct >= 90 ? 'Distinction' : pct >= 75 ? 'Merit' : pct >= 60 ? 'Pass' : 'Needs Review';
+  const banner = document.createElement('div');
+  banner.className = 'result-banner';
+  banner.innerHTML = `
+    <h2>Quiz Complete</h2>
+    <div class="big-score">${correct} / ${totalQ}</div>
+    <div class="grade">${pct}% — ${grade}</div>
+    <p style="margin-top:16px;">Review highlighted explanations above for any gaps.</p>
+    <button class="finish-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+  `;
+  document.getElementById('quizContainer').appendChild(banner);
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
